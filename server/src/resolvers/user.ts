@@ -1,18 +1,21 @@
-import { Arg, Mutation, Resolver } from "type-graphql";
+import * as argon from "argon2";
+import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
 import { User } from "~/entities/user";
+import { Context } from "~/types/context";
 import {
   LoginInput,
   RegisterInput,
   UserMutationResponse,
 } from "~/types/user.type";
-import * as argon from "argon2";
+import { COOKIE_NAME } from "~/utils/constants";
 import { validateRegisterInput } from "~/utils/user.validate";
 
 @Resolver()
 export class UserResolver {
-  @Mutation((_returns) => UserMutationResponse)
+  @Mutation((_return) => UserMutationResponse)
   async register(
-    @Arg("registerInput") registerInput: RegisterInput
+    @Arg("registerInput") registerInput: RegisterInput,
+    @Ctx() { req }: Context
   ): Promise<UserMutationResponse> {
     try {
       const validateResult = validateRegisterInput(registerInput);
@@ -39,6 +42,8 @@ export class UserResolver {
       const hash = await argon.hash(password);
       const newUser = User.create({ username, email, password: hash });
       await newUser.save();
+      req.session.userId = newUser.id;
+
       return {
         code: 200,
         success: true,
@@ -54,9 +59,10 @@ export class UserResolver {
     }
   }
 
-  @Mutation((_returns) => UserMutationResponse)
+  @Mutation((_return) => UserMutationResponse)
   async login(
-    @Arg("loginInput") loginInput: LoginInput
+    @Arg("loginInput") loginInput: LoginInput,
+    @Ctx() { req }: Context
   ): Promise<UserMutationResponse> {
     try {
       const { emailOrUsername, password } = loginInput;
@@ -89,6 +95,7 @@ export class UserResolver {
           errors: [{ field: "password", message: "Wrong password" }],
         };
 
+      req.session.userId = user.id;
       return {
         code: 200,
         success: true,
@@ -102,5 +109,19 @@ export class UserResolver {
         message: `Internal server error ${error.message}`,
       };
     }
+  }
+
+  @Mutation((_return) => Boolean)
+  async logout(@Ctx() { req, res }: Context): Promise<boolean> {
+    return new Promise((resolve, _reject) => {
+      res.clearCookie(COOKIE_NAME);
+      req.session.destroy((error) => {
+        if (error) {
+          console.log("DESTROYING SESSION ERROR", error);
+          resolve(false);
+        }
+        resolve(true);
+      });
+    });
   }
 }
