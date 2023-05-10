@@ -79,7 +79,7 @@ export class UserResolver {
           message: "User not found",
           errors: [
             {
-              field: "usernameOrEmail",
+              field: "emailOrUsername",
               message: "Username or email incorrect",
             },
           ],
