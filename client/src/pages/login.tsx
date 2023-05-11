@@ -3,15 +3,9 @@ import Wrapper from "../components/Wrapper";
 import { Form, Formik, FormikHelpers } from "formik";
 import InputField from "../components/InputField";
 import { Box, Button, useToast } from "@chakra-ui/react";
-import {
-  LoginInput,
-  LoginMutation,
-  LoginMutationVariables,
-} from "../gql/graphql";
-import { useMutation } from "@apollo/client";
-import { loginMutation } from "../graphql-client/mutations/auth";
 import { mapFieldErrors } from "../utils/mapFieldErrors";
 import { useRouter } from "next/router";
+import { LoginInput, useLoginMutation } from "../generated/graphql";
 
 const LoginPage = () => {
   const initialValues: LoginInput = {
@@ -20,10 +14,7 @@ const LoginPage = () => {
   };
   const router = useRouter();
   const toast = useToast();
-  const [loginUser, { loading, data, error }] = useMutation<
-    LoginMutation,
-    LoginMutationVariables
-  >(loginMutation);
+  const [loginUser, { loading, data, error }] = useLoginMutation();
 
   const handleSubmit = async (
     values: LoginInput,

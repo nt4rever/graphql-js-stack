@@ -1,16 +1,11 @@
-import { useMutation } from "@apollo/client";
 import { Box, Button, Text, useToast } from "@chakra-ui/react";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import InputField from "../components/InputField";
 import Wrapper from "../components/Wrapper";
-import {
-  RegisterInput,
-  RegisterMutation,
-  RegisterMutationVariables,
-} from "../gql/graphql";
-import { registerMutation } from "../graphql-client/mutations/auth";
+
 import { mapFieldErrors } from "../utils/mapFieldErrors";
+import { RegisterInput, useRegisterMutation } from "../generated/graphql";
 
 const RegisterPage = () => {
   const initialValues: RegisterInput = {
@@ -22,10 +17,7 @@ const RegisterPage = () => {
   const router = useRouter();
   const toast = useToast();
 
-  const [registerUser, { loading, data, error }] = useMutation<
-    RegisterMutation,
-    RegisterMutationVariables
-  >(registerMutation);
+  const [registerUser, { loading, data, error }] = useRegisterMutation();
 
   const onRegisterSubmit = async (
     values: RegisterInput,
