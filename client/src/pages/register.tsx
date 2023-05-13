@@ -1,11 +1,17 @@
-import { Box, Button, Text, useToast } from "@chakra-ui/react";
+import { Box, Button, Flex, Spinner, Text, useToast } from "@chakra-ui/react";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import InputField from "../components/InputField";
 import Wrapper from "../components/Wrapper";
 
 import { mapFieldErrors } from "../utils/mapFieldErrors";
-import { RegisterInput, useRegisterMutation } from "../generated/graphql";
+import {
+  MeDocument,
+  MeQuery,
+  RegisterInput,
+  useRegisterMutation,
+} from "../generated/graphql";
+import { useCheckAuth } from "../utils/useCheckAuth";
 
 const RegisterPage = () => {
   const initialValues: RegisterInput = {
@@ -16,6 +22,7 @@ const RegisterPage = () => {
 
   const router = useRouter();
   const toast = useToast();
+  const { data: meData, loading: authLoading } = useCheckAuth();
 
   const [registerUser, { loading, data, error }] = useRegisterMutation();
 
@@ -26,6 +33,16 @@ const RegisterPage = () => {
     const response = await registerUser({
       variables: {
         registerInput: values,
+      },
+      update(cache, { data }) {
+        if (data.register.success) {
+          cache.writeQuery<MeQuery>({
+            query: MeDocument,
+            data: {
+              me: data.register.user,
+            },
+          });
+        }
       },
     });
 
@@ -43,6 +60,13 @@ const RegisterPage = () => {
       router.push("/");
     }
   };
+
+  if (authLoading || (meData.me && !authLoading))
+    return (
+      <Flex justifyContent="center" alignItems="center" minH="100vh">
+        <Spinner />
+      </Flex>
+    );
 
   return (
     <Wrapper size="small">

@@ -39,12 +39,12 @@ export class PostResolver {
         title,
         text,
       });
-      newPost.save();
+      const post = await newPost.save();
       return {
         code: 200,
         success: true,
         message: "Post created successfully",
-        post: newPost,
+        post,
       };
     } catch (error) {
       return {

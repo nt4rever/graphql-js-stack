@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 4000;
 
 const main = async () => {
   await AppDataSource.initialize();
-
   const app = express();
 
   const mongoUrl = process.env.MONGO_DB_URL as string;

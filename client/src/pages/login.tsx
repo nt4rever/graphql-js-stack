@@ -2,10 +2,16 @@ import React from "react";
 import Wrapper from "../components/Wrapper";
 import { Form, Formik, FormikHelpers } from "formik";
 import InputField from "../components/InputField";
-import { Box, Button, useToast } from "@chakra-ui/react";
+import { Box, Button, Flex, Spinner, useToast } from "@chakra-ui/react";
 import { mapFieldErrors } from "../utils/mapFieldErrors";
 import { useRouter } from "next/router";
-import { LoginInput, useLoginMutation } from "../generated/graphql";
+import {
+  LoginInput,
+  MeDocument,
+  MeQuery,
+  useLoginMutation,
+} from "../generated/graphql";
+import { useCheckAuth } from "../utils/useCheckAuth";
 
 const LoginPage = () => {
   const initialValues: LoginInput = {
@@ -14,6 +20,8 @@ const LoginPage = () => {
   };
   const router = useRouter();
   const toast = useToast();
+
+  const { data: meData, loading: authLoading } = useCheckAuth();
   const [loginUser, { loading, data, error }] = useLoginMutation();
 
   const handleSubmit = async (
@@ -23,6 +31,16 @@ const LoginPage = () => {
     const response = await loginUser({
       variables: {
         loginInput: values,
+      },
+      update(cache, { data }) {
+        if (data?.login.success) {
+          cache.writeQuery<MeQuery>({
+            query: MeDocument,
+            data: {
+              me: data.login.user,
+            },
+          });
+        }
       },
     });
 
@@ -40,6 +58,13 @@ const LoginPage = () => {
       router.push("/");
     }
   };
+
+  if (authLoading || (meData.me && !authLoading))
+    return (
+      <Flex justifyContent="center" alignItems="center" minH="100vh">
+        <Spinner />
+      </Flex>
+    );
 
   return (
     <Wrapper size="small">

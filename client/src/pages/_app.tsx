@@ -3,16 +3,12 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { AppProps } from "next/app";
 import theme from "../theme";
 import { DarkModeSwitch } from "../components/DarkModeSwitch";
-
-const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql",
-  cache: new InMemoryCache(),
-  credentials: "include",
-});
+import { useApollo } from "../libs/apolloClient";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const apolloClient = useApollo(pageProps);
   return (
-    <ApolloProvider client={client}>
+    <ApolloProvider client={apolloClient}>
       <ChakraProvider theme={theme}>
         <DarkModeSwitch />
         <Component {...pageProps} />
