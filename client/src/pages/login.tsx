@@ -12,6 +12,7 @@ import {
   useLoginMutation,
 } from "../generated/graphql";
 import { useCheckAuth } from "../utils/useCheckAuth";
+import Link from "next/link";
 
 const LoginPage = () => {
   const initialValues: LoginInput = {
@@ -59,7 +60,7 @@ const LoginPage = () => {
     }
   };
 
-  if (authLoading || (meData.me && !authLoading))
+  if (authLoading || (meData?.me && !authLoading))
     return (
       <Flex justifyContent="center" alignItems="center" minH="100vh">
         <Spinner />
@@ -84,6 +85,9 @@ const LoginPage = () => {
                 label="Password"
                 type="password"
               />
+            </Box>
+            <Box mt={2}>
+              <Link href={"/forgot-password"}>Forgot password</Link>
             </Box>
             <Button
               type="submit"

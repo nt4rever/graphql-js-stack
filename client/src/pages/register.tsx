@@ -35,7 +35,7 @@ const RegisterPage = () => {
         registerInput: values,
       },
       update(cache, { data }) {
-        if (data.register.success) {
+        if (data?.register.success) {
           cache.writeQuery<MeQuery>({
             query: MeDocument,
             data: {
@@ -61,7 +61,7 @@ const RegisterPage = () => {
     }
   };
 
-  if (authLoading || (meData.me && !authLoading))
+  if (authLoading || (meData?.me && !authLoading))
     return (
       <Flex justifyContent="center" alignItems="center" minH="100vh">
         <Spinner />
